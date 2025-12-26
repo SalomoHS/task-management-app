@@ -1,14 +1,16 @@
 """
-Task CRUD routes using Supabase client directly
+Task CRUD routes using Supabase client directly with JWT authentication
 """
 from flask import Blueprint, request, jsonify
 from utils.supabaseClient import supabase_client
+from utils.jwt_utils import jwt_required
 
 tasks_bp = Blueprint('tasks', __name__, url_prefix='/api/tasks')
 
 @tasks_bp.route('', methods=['GET'])
+@jwt_required
 def get_tasks():
-    """Get all tasks"""
+    """Get all tasks - requires authentication"""
     try:
         response = supabase_client.schema('task_management_app').table('tasks').select('*').execute()
         return jsonify(response.data)
@@ -16,8 +18,9 @@ def get_tasks():
         return jsonify({'error': str(e)}), 500
 
 @tasks_bp.route('/<int:task_id>', methods=['GET'])
+@jwt_required
 def get_task(task_id):
-    """Get a specific task"""
+    """Get a specific task - requires authentication"""
     try:
         response = supabase_client.schema('task_management_app').table('tasks').select('*').eq('task_id', task_id).execute()
         if not response.data:
@@ -27,8 +30,9 @@ def get_task(task_id):
         return jsonify({'error': str(e)}), 500
 
 @tasks_bp.route('', methods=['POST'])
+@jwt_required
 def create_task():
-    """Create a new task"""
+    """Create a new task - requires authentication"""
     try:
         data = request.get_json()
         if not data or not data.get('title'):
@@ -49,8 +53,9 @@ def create_task():
         return jsonify({'error': str(e)}), 500
 
 @tasks_bp.route('/<int:task_id>', methods=['PUT'])
+@jwt_required
 def update_task(task_id):
-    """Update a task"""
+    """Update a task - requires authentication"""
     try:
         data = request.get_json()
         if not data:
@@ -73,8 +78,9 @@ def update_task(task_id):
         return jsonify({'error': str(e)}), 500
 
 @tasks_bp.route('/<int:task_id>', methods=['DELETE'])
+@jwt_required
 def delete_task(task_id):
-    """Delete a task"""
+    """Delete a task - requires authentication"""
     try:
         response = supabase_client.schema('task_management_app').table('tasks').delete().eq('task_id', task_id).execute()
         if not response.data:

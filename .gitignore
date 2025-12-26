@@ -54,7 +54,7 @@ coverage/
 
 # Test files
 .pytest_cache/
-.ipynb
+*.ipynb
 
 # Flask
 instance/
