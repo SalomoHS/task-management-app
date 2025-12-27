@@ -33,13 +33,13 @@ router.beforeEach(async (to, from, next) => {
   }
   
   // Check if route requires authentication
-  if (to.meta.requiresAuth && !authStore.isLoggedIn) {
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/login')
     return
   }
   
   // Check if route requires guest (not authenticated)
-  if (to.meta.requiresGuest && authStore.isLoggedIn) {
+  if (to.meta.requiresGuest && authStore.isAuthenticated) {
     next('/dashboard')
     return
   }
