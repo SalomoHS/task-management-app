@@ -1,0 +1,96 @@
+# Task Management Frontend
+
+A Vue.js 3 frontend application for task management with authentication.
+
+## Features
+
+- **Authentication**: Login/logout functionality with JWT tokens
+- **Task Management**: Create, read, update, and delete tasks
+- **Grid View**: Tasks displayed in a responsive grid layout
+- **Real-time Updates**: State management with Pinia
+- **Responsive Design**: Mobile-friendly interface
+
+## Tech Stack
+
+- Vue.js 3 (Composition API)
+- Vue Router 4
+- Pinia (State Management)
+- Axios (HTTP Client)
+- Vite (Build Tool)
+
+## Getting Started
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Create environment file:
+```bash
+cp .env.example .env
+```
+
+3. Update the API URL in `.env` if needed:
+```
+VITE_API_BASE_URL=http://localhost:5000
+```
+
+4. Start the development server:
+```bash
+npm run dev
+```
+
+5. Build for production:
+```bash
+npm run build
+```
+
+## Project Structure
+
+```
+src/
+├── components/          # Reusable Vue components
+│   ├── LoginForm.vue   # Login form component
+│   ├── Navigation.vue  # Navigation bar with logout
+│   └── TaskGrid.vue    # Task grid display and management
+├── stores/             # Pinia stores
+│   ├── auth.js        # Authentication state management
+│   ├── tasks.js       # Tasks state management
+│   └── index.js       # Store exports
+├── views/             # Page components
+│   ├── LoginView.vue  # Login page
+│   └── DashboardView.vue # Main dashboard
+├── router/            # Vue Router configuration
+│   └── index.js       # Routes and navigation guards
+├── App.vue            # Root component
+└── main.js            # Application entry point
+```
+
+## Authentication Flow
+
+1. User enters credentials on login page
+2. Frontend sends login request to backend API
+3. Backend returns JWT token and user info
+4. Token is stored in localStorage and added to axios headers
+5. Protected routes require valid token
+6. Logout clears token and redirects to login
+
+## Task Management
+
+- **Grid View**: Tasks displayed in responsive cards
+- **CRUD Operations**: Create, edit, and delete tasks
+- **Status Tracking**: Pending, In Progress, Completed
+- **Date Display**: Creation date formatting
+- **Modal Forms**: Inline editing and creation
+
+## API Integration
+
+The frontend communicates with the backend API at `http://localhost:5000` by default.
+
+### Endpoints Used:
+- `POST /users/login` - User authentication
+- `GET /users/profile` - Token validation
+- `GET /tasks` - Fetch user tasks
+- `POST /tasks` - Create new task
+- `PUT /tasks/:id` - Update task
+- `DELETE /tasks/:id` - Delete task

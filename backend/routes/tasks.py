@@ -12,7 +12,7 @@ tasks_bp = Blueprint('tasks', __name__, url_prefix='/api/tasks')
 def get_tasks():
     """Get all tasks - requires authentication"""
     try:
-        response = supabase_client.schema('task_management_app').table('tasks').select('*').execute()
+        response = supabase_client.schema('task_management_app').table('tasks').select('*, status_id(status)').execute()
         return jsonify(response.data)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -22,7 +22,7 @@ def get_tasks():
 def get_task(task_id):
     """Get a specific task - requires authentication"""
     try:
-        response = supabase_client.schema('task_management_app').table('tasks').select('*').eq('task_id', task_id).execute()
+        response = supabase_client.schema('task_management_app').table('tasks').select('*, status_id(status)').eq('task_id', task_id).execute()
         if not response.data:
             return jsonify({'error': 'Task not found'}), 404
         return jsonify(response.data[0])
@@ -66,7 +66,7 @@ def update_task(task_id):
             update_data['title'] = data['title']
         if 'description' in data:
             update_data['description'] = data['description']
-        if 'status' in data:
+        if 'status_id' in data:
             update_data['status_id'] = data['status_id']
         
         response = supabase_client.schema('task_management_app').table('tasks').update(update_data).eq('task_id', task_id).execute()
