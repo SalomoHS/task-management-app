@@ -1,8 +1,8 @@
 """
-Task CRUD routes using Supabase client directly with JWT authentication
+Task CRUD routes using psycopg2 with JWT authentication
 """
 from flask import Blueprint, request, jsonify
-from utils.supabaseClient import supabase_client
+from utils.db_connection import db
 from utils.jwt_utils import jwt_required
 
 tasks_bp = Blueprint('tasks', __name__, url_prefix='/api/tasks')
@@ -12,8 +12,14 @@ tasks_bp = Blueprint('tasks', __name__, url_prefix='/api/tasks')
 def get_tasks():
     """Get all tasks - requires authentication"""
     try:
-        response = supabase_client.schema('task_management_app').table('tasks').select('*').execute()
-        return jsonify(response.data)
+        query = """
+        SELECT t.*, s.status 
+        FROM tasks t 
+        LEFT JOIN status s ON t.status_id = s.status_id
+        ORDER BY t.task_id
+        """
+        tasks = db.execute_query(query, fetch_all=True)
+        return jsonify(tasks)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -22,10 +28,16 @@ def get_tasks():
 def get_task(task_id):
     """Get a specific task - requires authentication"""
     try:
-        response = supabase_client.schema('task_management_app').table('tasks').select('*').eq('task_id', task_id).execute()
-        if not response.data:
+        query = """
+        SELECT t.*, s.status 
+        FROM tasks t 
+        LEFT JOIN status s ON t.status_id = s.status_id
+        WHERE t.task_id = %s
+        """
+        task = db.execute_query(query, (task_id,), fetch_one=True)
+        if not task:
             return jsonify({'error': 'Task not found'}), 404
-        return jsonify(response.data[0])
+        return jsonify(task)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -41,14 +53,19 @@ def create_task():
         if not data or not data.get('status_id'):
             return jsonify({'error': 'Status is required'}), 400
 
-        task_data = {
-            'title': data['title'],
-            'description': data.get('description', 'no description'),
-            'status_id': data.get('status_id'),
-        }
+        query = """
+        INSERT INTO tasks (title, description, status_id)
+        VALUES (%s, %s, %s)
+        RETURNING *
+        """
+        params = (
+            data['title'],
+            data.get('description', 'no description'),
+            data['status_id']
+        )
         
-        response = supabase_client.schema('task_management_app').table('tasks').insert(task_data).execute()
-        return jsonify(response.data[0]), 201
+        task = db.execute_query(query, params, fetch_one=True)
+        return jsonify(task), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -61,19 +78,37 @@ def update_task(task_id):
         if not data:
             return jsonify({'error': 'No data provided'}), 400
         
-        update_data = {}
-        if 'title' in data:
-            update_data['title'] = data['title']
-        if 'description' in data:
-            update_data['description'] = data['description']
-        if 'status' in data:
-            update_data['status_id'] = data['status_id']
+        # Build dynamic update query based on provided fields
+        update_fields = []
+        params = []
         
-        response = supabase_client.schema('task_management_app').table('tasks').update(update_data).eq('task_id', task_id).execute()
-        if not response.data:
+        if 'title' in data:
+            update_fields.append('title = %s')
+            params.append(data['title'])
+        if 'description' in data:
+            update_fields.append('description = %s')
+            params.append(data['description'])
+        if 'status_id' in data:
+            update_fields.append('status_id = %s')
+            params.append(data['status_id'])
+        
+        if not update_fields:
+            return jsonify({'error': 'No valid fields to update'}), 400
+        
+        params.append(task_id)  # Add task_id for WHERE clause
+        
+        query = f"""
+        UPDATE tasks 
+        SET {', '.join(update_fields)}
+        WHERE task_id = %s
+        RETURNING *
+        """
+        
+        task = db.execute_query(query, tuple(params), fetch_one=True)
+        if not task:
             return jsonify({'error': 'Task not found'}), 404
         
-        return jsonify(response.data[0])
+        return jsonify(task)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -82,8 +117,9 @@ def update_task(task_id):
 def delete_task(task_id):
     """Delete a task - requires authentication"""
     try:
-        response = supabase_client.schema('task_management_app').table('tasks').delete().eq('task_id', task_id).execute()
-        if not response.data:
+        query = "DELETE FROM tasks WHERE task_id = %s RETURNING *"
+        task = db.execute_query(query, (task_id,), fetch_one=True)
+        if not task:
             return jsonify({'error': 'Task not found'}), 404
         
         return jsonify({'message': 'Task deleted successfully'})
