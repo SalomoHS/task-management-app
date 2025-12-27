@@ -12,27 +12,51 @@
           <span class="user-greeting">
             Welcome, {{ user?.username || 'User' }}
           </span>
-          <button @click="handleLogout" class="logout-btn">
+          <button @click="showLogoutConfirmation" class="logout-btn">
             Logout
           </button>
         </div>
       </div>
     </div>
   </nav>
+  
+  <ConfirmationDialog
+    ref="logoutDialog"
+    title="Confirm Logout"
+    message="Are you sure you want to logout?"
+    confirmText="Logout"
+    cancelText="Cancel"
+    confirmClass="danger"
+    @confirm="handleLogout"
+    @cancel="hideLogoutConfirmation"
+  />
 </template>
 
 <script>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useRouter } from 'vue-router'
+import ConfirmationDialog from './ConfirmationDialog.vue'
 
 export default {
   name: 'Navigation',
+  components: {
+    ConfirmationDialog
+  },
   setup() {
     const authStore = useAuthStore()
     const router = useRouter()
+    const logoutDialog = ref(null)
     
     const user = computed(() => authStore.user)
+    
+    const showLogoutConfirmation = () => {
+      logoutDialog.value?.open()
+    }
+    
+    const hideLogoutConfirmation = () => {
+      logoutDialog.value?.close()
+    }
     
     const handleLogout = async () => {
       await authStore.logout()
@@ -41,6 +65,9 @@ export default {
     
     return {
       user,
+      logoutDialog,
+      showLogoutConfirmation,
+      hideLogoutConfirmation,
       handleLogout
     }
   }

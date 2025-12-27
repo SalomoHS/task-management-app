@@ -29,7 +29,7 @@
           <h3 class="task-title">{{ task.title }}</h3>
           <div class="task-actions">
             <button @click="editTask(task)" class="edit-btn">Edit</button>
-            <button @click="deleteTask(task.task_id)" class="delete-btn">Delete</button>
+            <button @click="showDeleteConfirmation(task)" class="delete-btn">Delete</button>
           </div>
         </div>
         
@@ -51,7 +51,7 @@
       <div class="modal" @click.stop>
         <h3>{{ editingTask ? 'Edit Task' : 'Create New Task' }}</h3>
         
-        <form @submit.prevent="saveTask">
+        <form @submit.prevent="showSaveConfirmation">
           <div class="form-group">
             <label for="title">Title:</label>
             <input
@@ -92,6 +92,29 @@
         </form>
       </div>
     </div>
+    
+    <!-- Confirmation Dialogs -->
+    <ConfirmationDialog
+      ref="saveDialog"
+      title="Confirm Save Task"
+      :message="editingTask ? 'Are you sure you want to save changes to this task?' : 'Are you sure you want to create this task?'"
+      :confirmText="editingTask ? 'Save Changes' : 'Create Task'"
+      cancelText="Cancel"
+      confirmClass="success"
+      @confirm="confirmSaveTask"
+      @cancel="hideSaveConfirmation"
+    />
+    
+    <ConfirmationDialog
+      ref="deleteDialog"
+      title="Confirm Delete Task"
+      message="Are you sure you want to delete this task? This action cannot be undone."
+      confirmText="Delete"
+      cancelText="Cancel"
+      confirmClass="danger"
+      @confirm="confirmDeleteTask"
+      @cancel="hideDeleteConfirmation"
+    />
   </div>
 </template>
 
@@ -99,9 +122,13 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useTasksStore } from '../stores/tasks'
 import { useAuthStore } from '../stores/auth'
+import ConfirmationDialog from './ConfirmationDialog.vue'
 
 export default {
   name: 'TaskGrid',
+  components: {
+    ConfirmationDialog
+  },
   setup() {
     const tasksStore = useTasksStore()
     const authStore = useAuthStore()
@@ -113,6 +140,11 @@ export default {
       description: '',
       status: 'to_do'
     })
+    
+    // Confirmation dialog refs
+    const saveDialog = ref(null)
+    const deleteDialog = ref(null)
+    const taskToDelete = ref(null)
     
     // Status mapping for API calls (status_id values)
     const statusMapping = {
@@ -227,6 +259,48 @@ export default {
       }
     }
     
+    // Confirmation dialog methods
+    const showSaveConfirmation = () => {
+      saveDialog.value?.open()
+    }
+    
+    const hideSaveConfirmation = () => {
+      saveDialog.value?.close()
+    }
+    
+    const confirmSaveTask = async () => {
+      const taskData = {
+        title: taskForm.value.title,
+        description: taskForm.value.description,
+        status_id: statusMapping[taskForm.value.status] || 'TODO'
+      }
+      
+      if (editingTask.value) {
+        await tasksStore.updateTask(editingTask.value.task_id, taskData)
+      } else {
+        await tasksStore.createTask(taskData)
+      }
+      hideSaveConfirmation()
+      closeModal()
+    }
+    
+    const showDeleteConfirmation = (task) => {
+      taskToDelete.value = task
+      deleteDialog.value?.open()
+    }
+    
+    const hideDeleteConfirmation = () => {
+      deleteDialog.value?.close()
+      taskToDelete.value = null
+    }
+    
+    const confirmDeleteTask = async () => {
+      if (taskToDelete.value) {
+        await tasksStore.deleteTask(taskToDelete.value.task_id)
+        hideDeleteConfirmation()
+      }
+    }
+    
     const saveTask = async () => {
       const taskData = {
         title: taskForm.value.title,
@@ -266,13 +340,21 @@ export default {
       showCreateModal,
       editingTask,
       taskForm,
+      saveDialog,
+      deleteDialog,
       formatDate,
       getStatusDisplay,
       getStatusClass,
       editTask,
       closeModal,
       saveTask,
-      deleteTask
+      deleteTask,
+      showSaveConfirmation,
+      hideSaveConfirmation,
+      confirmSaveTask,
+      showDeleteConfirmation,
+      hideDeleteConfirmation,
+      confirmDeleteTask
     }
   }
 }
