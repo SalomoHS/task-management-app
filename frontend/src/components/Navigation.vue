@@ -12,27 +12,51 @@
           <span class="user-greeting">
             Welcome, {{ user?.username || 'User' }}
           </span>
-          <button @click="handleLogout" class="logout-btn">
+          <button @click="showLogoutConfirmation" class="logout-btn">
             Logout
           </button>
         </div>
       </div>
     </div>
   </nav>
+  
+  <ConfirmationDialog
+    ref="logoutDialog"
+    title="Confirm Logout"
+    message="Are you sure you want to logout?"
+    confirmText="Logout"
+    cancelText="Cancel"
+    confirmClass="danger"
+    @confirm="handleLogout"
+    @cancel="hideLogoutConfirmation"
+  />
 </template>
 
 <script>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useRouter } from 'vue-router'
+import ConfirmationDialog from './ConfirmationDialog.vue'
 
 export default {
   name: 'Navigation',
+  components: {
+    ConfirmationDialog
+  },
   setup() {
     const authStore = useAuthStore()
     const router = useRouter()
+    const logoutDialog = ref(null)
     
     const user = computed(() => authStore.user)
+    
+    const showLogoutConfirmation = () => {
+      logoutDialog.value?.open()
+    }
+    
+    const hideLogoutConfirmation = () => {
+      logoutDialog.value?.close()
+    }
     
     const handleLogout = async () => {
       await authStore.logout()
@@ -41,6 +65,9 @@ export default {
     
     return {
       user,
+      logoutDialog,
+      showLogoutConfirmation,
+      hideLogoutConfirmation,
       handleLogout
     }
   }
@@ -49,19 +76,25 @@ export default {
 
 <style scoped>
 .navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
   background-color: #343a40;
   color: white;
   padding: 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
 }
 
 .nav-container {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
+  padding: 0.75rem 2rem;
+  box-sizing: border-box;
+  height: 60px;
 }
 
 .nav-brand .brand-link {
@@ -103,7 +136,7 @@ export default {
 
 @media (max-width: 768px) {
   .nav-container {
-    padding: 1rem;
+    padding: 0.75rem 1rem;
   }
   
   .nav-user {

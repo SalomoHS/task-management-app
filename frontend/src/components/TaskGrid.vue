@@ -7,6 +7,29 @@
       </button>
     </div>
     
+    <!-- Filters Container -->
+    <div class="filters-container">
+      <!-- Time Order Filter -->
+      <div class="time-order-filter">
+        <label for="time-order-filter">Order by Time:</label>
+        <select id="time-order-filter" v-model="timeOrderFilter" class="filter-dropdown">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+        </select>
+      </div>
+      
+      <!-- Status Filter -->
+      <div class="status-filter">
+        <label for="status-filter">Status:</label>
+        <select id="status-filter" v-model="statusFilter" class="filter-dropdown">
+          <option value="all">All</option>
+          <option value="to_do">To Do</option>
+          <option value="in_progress">In Progress</option>
+          <option value="done">Done</option>
+        </select>
+      </div>
+    </div>
+    
     <div v-if="loading" class="loading">
       Loading tasks...
     </div>
@@ -20,16 +43,17 @@
     </div>
     
     <div v-else class="task-grid">
-      <div
-        v-for="task in tasks"
-        :key="task.id"
-        class="task-card"
-      >
+      <div class="task-column" v-for="(column, columnIndex) in zPatternTasks" :key="columnIndex">
+        <div
+          v-for="task in column"
+          :key="task.id"
+          class="task-card"
+        >
         <div class="task-header">
           <h3 class="task-title">{{ task.title }}</h3>
           <div class="task-actions">
             <button @click="editTask(task)" class="edit-btn">Edit</button>
-            <button @click="deleteTask(task.task_id)" class="delete-btn">Delete</button>
+            <button @click="showDeleteConfirmation(task)" class="delete-btn">Delete</button>
           </div>
         </div>
         
@@ -43,6 +67,7 @@
             {{ getStatusDisplay(task) }}
           </span>
         </div>
+        </div>
       </div>
     </div>
     
@@ -51,7 +76,7 @@
       <div class="modal" @click.stop>
         <h3>{{ editingTask ? 'Edit Task' : 'Create New Task' }}</h3>
         
-        <form @submit.prevent="saveTask">
+        <form @submit.prevent="showSaveConfirmation">
           <div class="form-group">
             <label for="title">Title:</label>
             <input
@@ -92,6 +117,29 @@
         </form>
       </div>
     </div>
+    
+    <!-- Confirmation Dialogs -->
+    <ConfirmationDialog
+      ref="saveDialog"
+      title="Confirm Save Task"
+      :message="editingTask ? 'Are you sure you want to save changes to this task?' : 'Are you sure you want to create this task?'"
+      :confirmText="editingTask ? 'Save Changes' : 'Create Task'"
+      cancelText="Cancel"
+      confirmClass="success"
+      @confirm="confirmSaveTask"
+      @cancel="hideSaveConfirmation"
+    />
+    
+    <ConfirmationDialog
+      ref="deleteDialog"
+      title="Confirm Delete Task"
+      message="Are you sure you want to delete this task? This action cannot be undone."
+      confirmText="Delete"
+      cancelText="Cancel"
+      confirmClass="danger"
+      @confirm="confirmDeleteTask"
+      @cancel="hideDeleteConfirmation"
+    />
   </div>
 </template>
 
@@ -99,9 +147,13 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useTasksStore } from '../stores/tasks'
 import { useAuthStore } from '../stores/auth'
+import ConfirmationDialog from './ConfirmationDialog.vue'
 
 export default {
   name: 'TaskGrid',
+  components: {
+    ConfirmationDialog
+  },
   setup() {
     const tasksStore = useTasksStore()
     const authStore = useAuthStore()
@@ -113,6 +165,17 @@ export default {
       description: '',
       status: 'to_do'
     })
+    
+    // Status filter state
+    const statusFilter = ref('all')
+    
+    // Time order filter state
+    const timeOrderFilter = ref('newest')
+    
+    // Confirmation dialog refs
+    const saveDialog = ref(null)
+    const deleteDialog = ref(null)
+    const taskToDelete = ref(null)
     
     // Status mapping for API calls (status_id values)
     const statusMapping = {
@@ -135,7 +198,40 @@ export default {
       'Done': 'Done'
     }
     
-    const tasks = computed(() => tasksStore.tasks)
+    const tasks = computed(() => {
+      return [...tasksStore.tasks].sort((a, b) => {
+        if (timeOrderFilter.value === 'oldest') {
+          return new Date(a.created_at) - new Date(b.created_at)
+        } else {
+          return new Date(b.created_at) - new Date(a.created_at)
+        }
+      })
+    })
+    
+    // Filtered tasks based on status filter
+    const filteredTasks = computed(() => {
+      if (statusFilter.value === 'all') {
+        return tasks.value
+      }
+      
+      return tasks.value.filter(task => {
+        const taskStatus = getStatusClass(task)
+        return taskStatus === statusFilter.value
+      })
+    })
+    
+    // Z-pattern layout: distribute tasks across columns in Z-order
+    const zPatternTasks = computed(() => {
+      const columns = 3
+      const result = [[], [], []]
+      
+      filteredTasks.value.forEach((task, index) => {
+        const columnIndex = index % columns
+        result[columnIndex].push(task)
+      })
+      
+      return result
+    })
     const loading = computed(() => tasksStore.loading)
     const error = computed(() => tasksStore.error)
     
@@ -174,7 +270,7 @@ export default {
           const statusClassMap = {
             'TODO': 'to_do',
             'INPROGRESS': 'in_progress',
-            'DONE': 'completed'
+            'DONE': 'done'
           }
           return statusClassMap[task.status_id] || 'to_do'
         } else if (task.status_id.status) {
@@ -182,7 +278,7 @@ export default {
           const statusClassMap = {
             'To Do': 'to_do',
             'In Progress': 'in_progress',
-            'Done': 'completed'
+            'Done': 'done'
           }
           return statusClassMap[task.status_id.status] || 'to_do'
         }
@@ -204,7 +300,7 @@ export default {
           const statusReverseMap = {
             'To Do': 'to_do',
             'In Progress': 'in_progress',
-            'Done': 'completed'
+            'Done': 'done'
           }
           currentStatus = statusReverseMap[task.status_id.status] || 'to_do'
         }
@@ -224,6 +320,48 @@ export default {
         title: '',
         description: '',
         status: 'to_do'
+      }
+    }
+    
+    // Confirmation dialog methods
+    const showSaveConfirmation = () => {
+      saveDialog.value?.open()
+    }
+    
+    const hideSaveConfirmation = () => {
+      saveDialog.value?.close()
+    }
+    
+    const confirmSaveTask = async () => {
+      const taskData = {
+        title: taskForm.value.title,
+        description: taskForm.value.description,
+        status_id: statusMapping[taskForm.value.status] || 'TODO'
+      }
+      
+      if (editingTask.value) {
+        await tasksStore.updateTask(editingTask.value.task_id, taskData)
+      } else {
+        await tasksStore.createTask(taskData)
+      }
+      hideSaveConfirmation()
+      closeModal()
+    }
+    
+    const showDeleteConfirmation = (task) => {
+      taskToDelete.value = task
+      deleteDialog.value?.open()
+    }
+    
+    const hideDeleteConfirmation = () => {
+      deleteDialog.value?.close()
+      taskToDelete.value = null
+    }
+    
+    const confirmDeleteTask = async () => {
+      if (taskToDelete.value) {
+        await tasksStore.deleteTask(taskToDelete.value.task_id)
+        hideDeleteConfirmation()
       }
     }
     
@@ -261,18 +399,30 @@ export default {
     
     return {
       tasks,
+      filteredTasks,
+      zPatternTasks,
       loading,
       error,
+      statusFilter,
+      timeOrderFilter,
       showCreateModal,
       editingTask,
       taskForm,
+      saveDialog,
+      deleteDialog,
       formatDate,
       getStatusDisplay,
       getStatusClass,
       editTask,
       closeModal,
       saveTask,
-      deleteTask
+      deleteTask,
+      showSaveConfirmation,
+      hideSaveConfirmation,
+      confirmSaveTask,
+      showDeleteConfirmation,
+      hideDeleteConfirmation,
+      confirmDeleteTask
     }
   }
 }
@@ -281,8 +431,8 @@ export default {
 <style scoped>
 .task-grid-container {
   padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .task-grid-header {
@@ -312,6 +462,64 @@ export default {
   background-color: #218838;
 }
 
+/* Filters Container */
+.filters-container {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Time Order Filter Styles */
+.time-order-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: left;
+}
+
+.time-order-filter label {
+  color: #333;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+/* Status Filter Styles */
+.status-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: left;
+}
+
+.status-filter label {
+  color: #333;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.filter-dropdown {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  color: #333;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  min-width: 120px;
+}
+
+.filter-dropdown:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.filter-dropdown:hover {
+  border-color: #999;
+}
+
 .loading, .error, .no-tasks {
   text-align: center;
   padding: 2rem;
@@ -323,10 +531,21 @@ export default {
   color: #dc3545;
 }
 
+/* Z-pattern layout using flexbox */
 .task-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  display: flex;
   gap: 1.5rem;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+/* Individual columns for Z-pattern */
+.task-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
 }
 
 .task-card {
@@ -336,6 +555,22 @@ export default {
   padding: 1.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+@media (max-width: 1024px) {
+  .task-grid {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .task-grid {
+    flex-direction: column;
+    gap: 1rem;
+  }
 }
 
 .task-card:hover {
@@ -347,6 +582,7 @@ export default {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 1rem;
+  width: 100%;
 }
 
 .task-title {
@@ -355,11 +591,18 @@ export default {
   font-size: 1.2rem;
   flex: 1;
   margin-right: 1rem;
+  text-align: left;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .task-actions {
   display: flex;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .edit-btn, .delete-btn {
@@ -392,6 +635,11 @@ export default {
   color: #666;
   margin-bottom: 1rem;
   line-height: 1.5;
+  text-align: left;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  width: 100%;
 }
 
 .task-footer {
@@ -399,6 +647,10 @@ export default {
   justify-content: space-between;
   align-items: center;
   font-size: 0.9rem;
+}
+
+.task-footer span {
+  text-align: left;
 }
 
 .task-date {
@@ -423,7 +675,7 @@ export default {
   color: #0c5460;
 }
 
-.task-status.completed {
+.task-status.done {
   background-color: #d4edda;
   color: #155724;
 }

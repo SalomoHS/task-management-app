@@ -27,6 +27,10 @@ export default {
 }
 
 .main-content {
-  min-height: calc(100vh - 80px);
+  min-height: calc(100vh - 60px);
+  width: 100%;
+  padding: 60px 0 0 0;
+  margin: 0;
+  box-sizing: border-box;
 }
 </style>
