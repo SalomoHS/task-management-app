@@ -363,8 +363,8 @@ export default {
 <style scoped>
 .task-grid-container {
   padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .task-grid-header {
@@ -405,10 +405,11 @@ export default {
   color: #dc3545;
 }
 
+/* Masonry-style layout for better column distribution */
 .task-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
+  column-count: 3;
+  column-gap: 1.5rem;
+  column-fill: balance;
 }
 
 .task-card {
@@ -418,6 +419,23 @@ export default {
   padding: 1.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  break-inside: avoid; /* Prevent cards from breaking across columns */
+  margin-bottom: 1.5rem; /* Add margin for column layout */
+}
+
+@media (max-width: 1024px) {
+  .task-grid {
+    column-count: 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .task-grid {
+    column-count: 1;
+  }
 }
 
 .task-card:hover {
@@ -429,6 +447,7 @@ export default {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 1rem;
+  width: 100%;
 }
 
 .task-title {
@@ -437,11 +456,18 @@ export default {
   font-size: 1.2rem;
   flex: 1;
   margin-right: 1rem;
+  text-align: left;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .task-actions {
   display: flex;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .edit-btn, .delete-btn {
@@ -474,6 +500,11 @@ export default {
   color: #666;
   margin-bottom: 1rem;
   line-height: 1.5;
+  text-align: left;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  width: 100%;
 }
 
 .task-footer {

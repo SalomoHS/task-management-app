@@ -76,19 +76,25 @@ export default {
 
 <style scoped>
 .navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
   background-color: #343a40;
   color: white;
   padding: 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
 }
 
 .nav-container {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
+  padding: 0.75rem 2rem;
+  box-sizing: border-box;
+  height: 60px;
 }
 
 .nav-brand .brand-link {
@@ -130,7 +136,7 @@ export default {
 
 @media (max-width: 768px) {
   .nav-container {
-    padding: 1rem;
+    padding: 0.75rem 1rem;
   }
   
   .nav-user {
