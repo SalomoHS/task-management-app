@@ -7,6 +7,29 @@
       </button>
     </div>
     
+    <!-- Filters Container -->
+    <div class="filters-container">
+      <!-- Time Order Filter -->
+      <div class="time-order-filter">
+        <label for="time-order-filter">Order by Time:</label>
+        <select id="time-order-filter" v-model="timeOrderFilter" class="filter-dropdown">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+        </select>
+      </div>
+      
+      <!-- Status Filter -->
+      <div class="status-filter">
+        <label for="status-filter">Status:</label>
+        <select id="status-filter" v-model="statusFilter" class="filter-dropdown">
+          <option value="all">All</option>
+          <option value="to_do">To Do</option>
+          <option value="in_progress">In Progress</option>
+          <option value="done">Done</option>
+        </select>
+      </div>
+    </div>
+    
     <div v-if="loading" class="loading">
       Loading tasks...
     </div>
@@ -20,11 +43,12 @@
     </div>
     
     <div v-else class="task-grid">
-      <div
-        v-for="task in tasks"
-        :key="task.id"
-        class="task-card"
-      >
+      <div class="task-column" v-for="(column, columnIndex) in zPatternTasks" :key="columnIndex">
+        <div
+          v-for="task in column"
+          :key="task.id"
+          class="task-card"
+        >
         <div class="task-header">
           <h3 class="task-title">{{ task.title }}</h3>
           <div class="task-actions">
@@ -42,6 +66,7 @@
           <span class="task-status" :class="getStatusClass(task)">
             {{ getStatusDisplay(task) }}
           </span>
+        </div>
         </div>
       </div>
     </div>
@@ -141,6 +166,12 @@ export default {
       status: 'to_do'
     })
     
+    // Status filter state
+    const statusFilter = ref('all')
+    
+    // Time order filter state
+    const timeOrderFilter = ref('newest')
+    
     // Confirmation dialog refs
     const saveDialog = ref(null)
     const deleteDialog = ref(null)
@@ -167,7 +198,40 @@ export default {
       'Done': 'Done'
     }
     
-    const tasks = computed(() => tasksStore.tasks)
+    const tasks = computed(() => {
+      return [...tasksStore.tasks].sort((a, b) => {
+        if (timeOrderFilter.value === 'oldest') {
+          return new Date(a.created_at) - new Date(b.created_at)
+        } else {
+          return new Date(b.created_at) - new Date(a.created_at)
+        }
+      })
+    })
+    
+    // Filtered tasks based on status filter
+    const filteredTasks = computed(() => {
+      if (statusFilter.value === 'all') {
+        return tasks.value
+      }
+      
+      return tasks.value.filter(task => {
+        const taskStatus = getStatusClass(task)
+        return taskStatus === statusFilter.value
+      })
+    })
+    
+    // Z-pattern layout: distribute tasks across columns in Z-order
+    const zPatternTasks = computed(() => {
+      const columns = 3
+      const result = [[], [], []]
+      
+      filteredTasks.value.forEach((task, index) => {
+        const columnIndex = index % columns
+        result[columnIndex].push(task)
+      })
+      
+      return result
+    })
     const loading = computed(() => tasksStore.loading)
     const error = computed(() => tasksStore.error)
     
@@ -206,7 +270,7 @@ export default {
           const statusClassMap = {
             'TODO': 'to_do',
             'INPROGRESS': 'in_progress',
-            'DONE': 'completed'
+            'DONE': 'done'
           }
           return statusClassMap[task.status_id] || 'to_do'
         } else if (task.status_id.status) {
@@ -214,7 +278,7 @@ export default {
           const statusClassMap = {
             'To Do': 'to_do',
             'In Progress': 'in_progress',
-            'Done': 'completed'
+            'Done': 'done'
           }
           return statusClassMap[task.status_id.status] || 'to_do'
         }
@@ -236,7 +300,7 @@ export default {
           const statusReverseMap = {
             'To Do': 'to_do',
             'In Progress': 'in_progress',
-            'Done': 'completed'
+            'Done': 'done'
           }
           currentStatus = statusReverseMap[task.status_id.status] || 'to_do'
         }
@@ -335,8 +399,12 @@ export default {
     
     return {
       tasks,
+      filteredTasks,
+      zPatternTasks,
       loading,
       error,
+      statusFilter,
+      timeOrderFilter,
       showCreateModal,
       editingTask,
       taskForm,
@@ -394,6 +462,64 @@ export default {
   background-color: #218838;
 }
 
+/* Filters Container */
+.filters-container {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Time Order Filter Styles */
+.time-order-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: left;
+}
+
+.time-order-filter label {
+  color: #333;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+/* Status Filter Styles */
+.status-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: left;
+}
+
+.status-filter label {
+  color: #333;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.filter-dropdown {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  color: #333;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  min-width: 120px;
+}
+
+.filter-dropdown:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.filter-dropdown:hover {
+  border-color: #999;
+}
+
 .loading, .error, .no-tasks {
   text-align: center;
   padding: 2rem;
@@ -405,11 +531,21 @@ export default {
   color: #dc3545;
 }
 
-/* Masonry-style layout for better column distribution */
+/* Z-pattern layout using flexbox */
 .task-grid {
-  column-count: 3;
-  column-gap: 1.5rem;
-  column-fill: balance;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+/* Individual columns for Z-pattern */
+.task-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
 }
 
 .task-card {
@@ -422,19 +558,18 @@ export default {
   width: 100%;
   box-sizing: border-box;
   min-width: 0;
-  break-inside: avoid; /* Prevent cards from breaking across columns */
-  margin-bottom: 1.5rem; /* Add margin for column layout */
 }
 
 @media (max-width: 1024px) {
   .task-grid {
-    column-count: 2;
+    gap: 1rem;
   }
 }
 
 @media (max-width: 768px) {
   .task-grid {
-    column-count: 1;
+    flex-direction: column;
+    gap: 1rem;
   }
 }
 
@@ -514,6 +649,10 @@ export default {
   font-size: 0.9rem;
 }
 
+.task-footer span {
+  text-align: left;
+}
+
 .task-date {
   color: #888;
 }
@@ -536,7 +675,7 @@ export default {
   color: #0c5460;
 }
 
-.task-status.completed {
+.task-status.done {
   background-color: #d4edda;
   color: #155724;
 }

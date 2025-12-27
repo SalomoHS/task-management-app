@@ -37,6 +37,11 @@ body {
   text-align: center;
 }
 
+/* Ensure all spans within divs are left-aligned */
+div span {
+  text-align: left;
+}
+
 button {
   border-radius: 8px;
   border: 1px solid transparent;
