@@ -75,9 +75,9 @@
           <div class="form-group">
             <label for="status">Status:</label>
             <select id="status" v-model="taskForm.status">
-              <option value="pending">Pending</option>
+              <option value="to_do">To Do</option>
               <option value="in_progress">In Progress</option>
-              <option value="completed">Completed</option>
+              <option value="done">Done</option>
             </select>
           </div>
           
@@ -111,28 +111,28 @@ export default {
     const taskForm = ref({
       title: '',
       description: '',
-      status: 'pending'
+      status: 'to_do'
     })
     
     // Status mapping for API calls (status_id values)
     const statusMapping = {
-      'pending': 'TODO',
+      'to_do': 'TODO',
       'in_progress': 'INPROGRESS', 
-      'completed': 'DONE'
+      'done': 'DONE'
     }
     
     // Reverse mapping for status_id values
     const reverseStatusMapping = {
-      'TODO': 'pending',
+      'TODO': 'to_do',
       'INPROGRESS': 'in_progress',
-      'DONE': 'completed'
+      'DONE': 'done'
     }
     
     // Display mapping for status text from status table
     const displayStatusMapping = {
-      'To Do': 'pending',
-      'In Progress': 'in_progress',
-      'Completed': 'completed'
+      'To Do': 'To Do',
+      'In Progress': 'In Progress',
+      'Done': 'Done'
     }
     
     const tasks = computed(() => tasksStore.tasks)
@@ -153,41 +153,60 @@ export default {
       if (task.status_id) {
         if (typeof task.status_id === 'string') {
           // Direct status_id value like "TODO"
-          const mappedStatus = reverseStatusMapping[task.status_id] || 'pending'
-          return mappedStatus.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+          const statusMap = {
+            'TODO': 'To Do',
+            'INPROGRESS': 'In Progress',
+            'DONE': 'Done'
+          }
+          return statusMap[task.status_id] || 'To Do'
         } else if (task.status_id.status) {
           // Nested status object with display text like "To Do"
           return task.status_id.status
         }
       }
-      return 'Pending'
+      return 'To Do'
     }
     
     const getStatusClass = (task) => {
       if (task.status_id) {
         if (typeof task.status_id === 'string') {
           // Direct status_id value like "TODO"
-          return reverseStatusMapping[task.status_id] || 'pending'
+          const statusClassMap = {
+            'TODO': 'to_do',
+            'INPROGRESS': 'in_progress',
+            'DONE': 'completed'
+          }
+          return statusClassMap[task.status_id] || 'to_do'
         } else if (task.status_id.status) {
           // Nested status object with display text like "To Do"
-          return displayStatusMapping[task.status_id.status] || 'pending'
+          const statusClassMap = {
+            'To Do': 'to_do',
+            'In Progress': 'in_progress',
+            'Done': 'completed'
+          }
+          return statusClassMap[task.status_id.status] || 'to_do'
         }
       }
-      return 'pending'
+      return 'to_do'
     }
     
     const editTask = (task) => {
       editingTask.value = task
       
       // Handle both status_id (string) and status_id.status (display text)
-      let currentStatus = 'pending'
+      let currentStatus = 'to_do'
       if (task.status_id) {
         if (typeof task.status_id === 'string') {
           // Direct status_id value like "TODO"
-          currentStatus = reverseStatusMapping[task.status_id] || 'pending'
+          currentStatus = reverseStatusMapping[task.status_id] || 'to_do'
         } else if (task.status_id.status) {
           // Nested status object with display text like "To Do"
-          currentStatus = displayStatusMapping[task.status_id.status] || 'pending'
+          const statusReverseMap = {
+            'To Do': 'to_do',
+            'In Progress': 'in_progress',
+            'Done': 'completed'
+          }
+          currentStatus = statusReverseMap[task.status_id.status] || 'to_do'
         }
       }
       
@@ -204,7 +223,7 @@ export default {
       taskForm.value = {
         title: '',
         description: '',
-        status: 'pending'
+        status: 'to_do'
       }
     }
     
@@ -394,7 +413,7 @@ export default {
   text-transform: capitalize;
 }
 
-.task-status.pending {
+.task-status.to_do {
   background-color: #fff3cd;
   color: #856404;
 }
