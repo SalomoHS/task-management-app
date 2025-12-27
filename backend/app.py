@@ -2,7 +2,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 import os
-from utils.supabaseClient import supabase_client
+from utils.db_connection import db
 
 # Load environment variables
 load_dotenv()
@@ -22,9 +22,9 @@ def create_app():
     
     @app.route('/health')
     def health_check():
-        # Test Supabase connection with tasks table
+        # Test psycopg2 connection with tasks table
         try:
-            supabase_client.schema('task_management_app').table('tasks').select('*').limit(1).execute()
+            db.execute_query('SELECT 1', fetch_one=True)
             db_status = 'connected'
         except:
             db_status = 'disconnected'
@@ -39,7 +39,7 @@ def create_app():
     def api_health_check():
         """API health check endpoint"""
         try:
-            supabase_client.schema('task_management_app').table('tasks').select('*').limit(1).execute()
+            db.execute_query('SELECT 1', fetch_one=True)
             db_status = 'connected'
         except:
             db_status = 'disconnected'
