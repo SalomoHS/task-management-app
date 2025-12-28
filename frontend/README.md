@@ -1,6 +1,33 @@
-# Task Management Frontend
+# Frontend Services
 
-A Vue.js 3 frontend application for task management with authentication.
+This directory contains the Vue.js 3 frontend application for task management.
+
+## Frontend Structure
+
+```
+src/
+├── components/          # Reusable Vue components
+│   ├── ConfirmationDialog.vue # Confirmation dialog
+│   ├── LoginForm.vue    # Login form component
+│   ├── Navigation.vue   # Navigation bar with logout
+│   ├── ResponseModal.vue # Response modal
+│   └── TaskGrid.vue     # Task grid display and management
+├── lib/                 # Library utilities
+│   └── utils.js         # Utility functions
+├── stores/              # Pinia stores
+│   ├── auth.js          # Authentication state management
+│   ├── tasks.js         # Tasks state management
+│   └── index.js         # Store exports
+├── views/               # Page components
+│   ├── DashboardView.vue # Main dashboard
+│   └── LoginView.vue    # Login page
+├── router/              # Vue Router configuration
+│   └── index.js         # Routes and navigation guards
+├── test/                # Test configuration
+│   └── setup.js         # Test setup
+├── App.vue              # Root component
+└── main.js              # Application entry point
+```
 
 ## Features
 
@@ -31,6 +58,7 @@ cp .env.example .env
 ```
 
 3. Update the FLask API URL in `.env` if needed:
+Example `.env` content:
 ```
 VITE_API_BASE_URL=http://localhost:5000
 ```
@@ -50,27 +78,6 @@ npm run build
 npm run preview
 ```
 The application will be available at `http://localhost:4173` by default.
-
-## Project Structure
-
-```
-src/
-├── components/          # Reusable Vue components
-│   ├── LoginForm.vue   # Login form component
-│   ├── Navigation.vue  # Navigation bar with logout
-│   └── TaskGrid.vue    # Task grid display and management
-├── stores/             # Pinia stores
-│   ├── auth.js        # Authentication state management
-│   ├── tasks.js       # Tasks state management
-│   └── index.js       # Store exports
-├── views/             # Page components
-│   ├── LoginView.vue  # Login page
-│   └── DashboardView.vue # Main dashboard
-├── router/            # Vue Router configuration
-│   └── index.js       # Routes and navigation guards
-├── App.vue            # Root component
-└── main.js            # Application entry point
-```
 
 ## Authentication Flow
 
@@ -99,4 +106,5 @@ The frontend communicates with the backend API at `http://localhost:5000` by def
 - `GET /tasks` - Fetch user tasks
 - `POST /tasks` - Create new task
 - `PUT /tasks/:id` - Update task
+- `POST /api/agent/process` - Process agent prompt
 - `DELETE /tasks/:id` - Delete task
