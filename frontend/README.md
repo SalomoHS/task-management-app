@@ -30,7 +30,7 @@ npm install
 cp .env.example .env
 ```
 
-3. Update the API URL in `.env` if needed:
+3. Update the FLask API URL in `.env` if needed:
 ```
 VITE_API_BASE_URL=http://localhost:5000
 ```
@@ -44,6 +44,12 @@ npm run dev
 ```bash
 npm run build
 ```
+
+6. Preview production build:
+```bash
+npm run preview
+```
+The application will be available at `http://localhost:4173` by default.
 
 ## Project Structure
 
