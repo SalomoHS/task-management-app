@@ -39,14 +39,22 @@ task-management-app/
 
 1. Clone the repository:
    ```bash
-   https://github.com/SalomoHS/task-management-app git
+   git clone https://github.com/SalomoHS/task-management-app.git
    cd task-management-app
    ```
 
 2. Create and activate a Conda environment:
+
+   > **Note:** Ensure you have Anaconda installed and have entered the base virtual environment.
+
    ```bash
    conda create -n task-management-app python=3.11.4
    conda activate task-management-app
+   ```
+
+   Expected your cmd/terminal looks like:
+   ```bash
+   (task-management-app) path/to/project/directory>
    ```
 
 3. Install dependencies:
@@ -67,6 +75,8 @@ task-management-app/
      ```
 
 4. Set up environment variables:
+
+   > **Note:** You can simply copy the `.env.example` file to `.env` in both the `frontend` and `backend` directories. open your `.env` and then update the values.
 
    **Frontend** (`frontend/.env`):
    ```
@@ -126,13 +136,13 @@ task-management-app/
 
 ### Development
 
-Run both frontend and backend in development mode:
+Run both backend and frontend in development mode:
 ```bash
-# Frontend (runs on http://localhost:3000 by default)
-npm run dev:frontend
-
 # Backend (runs on http://localhost:5000)
 npm run dev:backend
+
+# Frontend (runs on http://localhost:3000 by default)
+npm run dev:frontend
 ```
 
 ### Testing
