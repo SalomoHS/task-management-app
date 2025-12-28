@@ -36,6 +36,7 @@ task-management-app/
 
 - Node.js (v16 or higher)
 - Python (v3.10 or higher)
+- PostgreSQL (I'm using pgAdmin4)
 - Google Gemini API Key (for AI features)
 
 ### Installation
