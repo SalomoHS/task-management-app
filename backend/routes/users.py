@@ -18,7 +18,7 @@ DUMMY_ADMIN = {
 
 @users_bp.route('', methods=['GET'])
 @jwt_required
-def get_users():
+async def get_users():
     """Get all users - returns hardcoded admin (without password) - requires authentication"""
     admin_safe = DUMMY_ADMIN.copy()
     admin_safe.pop('password', None)  # Don't expose password
@@ -26,7 +26,7 @@ def get_users():
 
 @users_bp.route('/<int:user_id>', methods=['GET'])
 @jwt_required
-def get_user(user_id):
+async def get_user(user_id):
     """Get a specific user - only admin (id=1) exists - requires authentication"""
     if user_id == 1:
         admin_safe = DUMMY_ADMIN.copy()
@@ -36,7 +36,7 @@ def get_user(user_id):
         return jsonify({'error': 'User not found'}), 404
 
 @users_bp.route('/login', methods=['POST'])
-def login():
+async def login():
     """Login endpoint for admin user - returns JWT token on success"""
     try:
         data = request.get_json()
@@ -69,14 +69,14 @@ def login():
 @users_bp.route('', methods=['POST'])
 @jwt_required
 @admin_required
-def create_user():
+async def create_user():
     """Create user endpoint - not implemented, admin already exists - requires admin access"""
     return jsonify({'error': 'User creation disabled - admin user already exists'}), 400
 
 @users_bp.route('/<int:user_id>', methods=['PUT'])
 @jwt_required
 @admin_required
-def update_user(user_id):
+async def update_user(user_id):
     """Update user endpoint - not implemented - requires admin access"""
     return jsonify({'error': 'User updates disabled - using hardcoded admin'}), 400
 
@@ -100,7 +100,7 @@ def get_current_user():
         return jsonify({'error': 'User not found'}), 404
 
 @users_bp.route('/verify-token', methods=['POST'])
-def verify_token():
+async def verify_token():
     """Verify if a JWT token is valid"""
     try:
         data = request.get_json()
