@@ -34,7 +34,7 @@ class AgentGateway():
             
             console.print(f"\n[green]Prompt accepted by Reviewer Agent[/green]")
                 
-            agent = await self.__crud_agent.call(prompt, token)
+            agent = await self.__crud_agent.call(prompt)
             return {
                 "status": "success",
                 "message": agent
