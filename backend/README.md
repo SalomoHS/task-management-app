@@ -17,6 +17,48 @@ This directory contains the Flask-based backend for the Task Management applicat
    ```
    Update the `.env` file with your database credentials, JWT secret, and API keys.
 
+   **Example `.env` configuration:**
+
+   ```ini
+   # Database Configuration
+   DB_NAME=my_db
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_USER=postgres
+   DB_PASSWORD=postgres
+   DB_SCHEMA=task-management-app
+
+   # Flask Server Configuration
+   FLASK_DEV_HOST=localhost
+   FLASK_DEV_PORT=5000
+   BASE_URL=http://localhost:5000
+
+   # JWT Configuration
+   JWT_SECRET_KEY=dev_secret_key_change_in_prod
+   JWT_ALGORITHM=HS256
+   JWT_EXPIRATION_HOURS=24
+
+   # AI Configuration
+   GEMINI_API_KEY=your_gemini_api_key_here
+   ```
+
+   **Configuration Guide:**
+
+   | Variable | Description | How to obtain |
+   |----------|-------------|---------------|
+   | **Database** | | |
+   | `DB_NAME`, `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD` | PostgreSQL connection details. | Ensure you have PostgreSQL installed (I use PgAdmin4). Create a database (e.g., `my_db`,`task_management`). `DB_USER` and `DB_PASSWORD` are your Postgres credentials. |
+   | `DB_SCHEMA` | Database schema name. | For this repo, set to `task-management-app`. |
+   | **Flask** | | |
+   | `FLASK_DEV_HOST`, `FLASK_DEV_PORT` | Host and port for the dev server. | Default to `localhost` and `5000`. |
+   | `BASE_URL` | Base URL of the API. | Used for constructing absolute URLs. |
+   | **JWT** | | |
+   | `JWT_SECRET_KEY` | Secret key for signing tokens. | It can be a random value (e.g., `1234`, `abcd`). |
+   | `JWT_ALGORITHM` | Encryption algorithm. | Common choice is `HS256`. |
+   | `JWT_EXPIRATION_HOURS` | Token validity in hours. | Set as integer (e.g., `24`). |
+   | **AI** | | |
+   | `GEMINI_API_KEY` | Google Gemini API Key. | Get it from [Google AI Studio](https://aistudio.google.com/app/apikey). |
+
 ## Running the Application
 
 The project provides two entry points depending on the environment:
@@ -84,6 +126,6 @@ python test_endpoints.py
 4. **Task Management**:
    - Creates a new task.
    - Retrieves, updates, and deletes the created task.
-5. **AI Agent** (Optional):
-   - Can be enabled to test prompt processing endpoints.
+5. **AI Agent**:
+   - Test prompt processing endpoints.
 
