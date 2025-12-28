@@ -140,6 +140,30 @@
       @confirm="confirmDeleteTask"
       @cancel="hideDeleteConfirmation"
     />
+    
+    <ResponseModal
+      ref="responseModal"
+      :title="responseTitle"
+      :message="responseMessage"
+      :type="responseType"
+    />
+
+    <!-- Floating Input Prompt Bar -->
+    <div class="input-prompt-container">
+      <div class="input-prompt-bar" :class="{ 'loading': isPromptLoading }">
+        <input 
+          type="text" 
+          v-model="promptInput" 
+          placeholder="Ask AI to help create, update, or delete your task..." 
+          :disabled="isPromptLoading"
+          @keyup.enter="handlePromptSubmit"
+        />
+        <button class="send-btn" @click="handlePromptSubmit" v-if="promptInput && !isPromptLoading">
+          <span class="arrow-icon">↑</span>
+        </button>
+        <div class="loading-spinner" v-if="isPromptLoading"></div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -148,11 +172,13 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useTasksStore } from '../stores/tasks'
 import { useAuthStore } from '../stores/auth'
 import ConfirmationDialog from './ConfirmationDialog.vue'
+import ResponseModal from './ResponseModal.vue'
 
 export default {
   name: 'TaskGrid',
   components: {
-    ConfirmationDialog
+    ConfirmationDialog,
+    ResponseModal
   },
   setup() {
     const tasksStore = useTasksStore()
@@ -171,11 +197,21 @@ export default {
     
     // Time order filter state
     const timeOrderFilter = ref('newest')
+
+    // Prompt input state
+    const promptInput = ref('')
+    const isPromptLoading = ref(false)
     
     // Confirmation dialog refs
     const saveDialog = ref(null)
     const deleteDialog = ref(null)
     const taskToDelete = ref(null)
+    
+    // Response modal state
+    const responseModal = ref(null)
+    const responseTitle = ref('')
+    const responseMessage = ref('')
+    const responseType = ref('success')
     
     // Status mapping for API calls (status_id values)
     const statusMapping = {
@@ -385,6 +421,47 @@ export default {
         await tasksStore.deleteTask(taskId)
       }
     }
+
+    const handlePromptSubmit = async () => {
+      if (!promptInput.value.trim() || isPromptLoading.value) return
+      
+      const prompt = promptInput.value
+      isPromptLoading.value = true
+      
+      try {
+        const result = await tasksStore.processAgentPrompt(prompt)
+        if (result.success) {
+          promptInput.value = ''
+          responseTitle.value = 'Success'
+          
+          // Clean up the response message if it contains raw AgentResult
+          let cleanMessage = result.response || 'Action completed successfully'
+          if (typeof cleanMessage === 'string' && cleanMessage.includes('AgentResult')) {
+            const match = cleanMessage.match(/content': \[\{'text': (["'])([\s\S]*?)\1\}\]/)
+            if (match && match[2]) {
+              cleanMessage = match[2]
+            }
+          }
+          
+          responseMessage.value = cleanMessage
+          responseType.value = 'success'
+        } else {
+          console.error('Agent processing failed:', result.message)
+          responseTitle.value = 'Error'
+          responseMessage.value = result.message || 'An error occurred'
+          responseType.value = 'error'
+        }
+        responseModal.value?.open()
+      } catch (error) {
+        console.error('Unexpected error:', error)
+        responseTitle.value = 'Error'
+        responseMessage.value = 'An unexpected error occurred'
+        responseType.value = 'error'
+        responseModal.value?.open()
+      } finally {
+        isPromptLoading.value = false
+      }
+    }
     
     onMounted(async () => {
       // Wait for authentication to be ready
@@ -405,11 +482,17 @@ export default {
       error,
       statusFilter,
       timeOrderFilter,
+      promptInput,
+      isPromptLoading,
       showCreateModal,
       editingTask,
       taskForm,
       saveDialog,
       deleteDialog,
+      responseModal,
+      responseTitle,
+      responseMessage,
+      responseType,
       formatDate,
       getStatusDisplay,
       getStatusClass,
@@ -417,6 +500,7 @@ export default {
       closeModal,
       saveTask,
       deleteTask,
+      handlePromptSubmit,
       showSaveConfirmation,
       hideSaveConfirmation,
       confirmSaveTask,
@@ -771,5 +855,151 @@ export default {
 
 .save-btn:hover {
   background-color: #0056b3;
+}
+
+/* Floating Input Prompt Bar */
+.input-prompt-container {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  width: 100%;
+  max-width: 600px;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+/* Define the custom property for rotation */
+@property --gradient-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.input-prompt-bar {
+  background: white;
+  border-radius: 50px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  transition: box-shadow 0.2s, border-color 0.2s;
+  position: relative;
+  /* z-index must be auto to allow negative z-index children to go behind background */
+  z-index: auto; 
+}
+
+.input-prompt-bar.loading {
+  background: white;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.input-prompt-bar.loading::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -2px;
+  border-radius: 52px;
+  background: conic-gradient(
+    from var(--gradient-angle),
+    #B07CFF,
+    #62B6FF,
+    #B07CFF
+  );
+  animation: rotation 2s linear infinite;
+}
+
+.input-prompt-bar.loading::after {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  inset: -4px;
+  border-radius: 54px;
+  background: conic-gradient(
+    from var(--gradient-angle),
+    #B07CFF,
+    #62B6FF,
+    #B07CFF
+  );
+  filter: blur(10px);
+  opacity: 0.6;
+  animation: rotation 2s linear infinite;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top-color: #7A56C9;
+  border-right-color: #7A56C9;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+@keyframes rotation {
+  0% { --gradient-angle: 0deg; }
+  100% { --gradient-angle: 360deg; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.input-prompt-bar:focus-within {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  border-color: #007bff;
+}
+
+.input-prompt-bar.loading:focus-within {
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.input-prompt-bar input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 1rem;
+  padding: 8px;
+  background: transparent;
+  flex: 1;
+  color: black;
+  transition: color 0.2s, opacity 0.2s;
+}
+
+.input-prompt-bar.loading input {
+  color: #666;
+  opacity: 0.75;
+}
+
+.send-btn {
+  background: #007bff;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-left: 8px;
+  flex-shrink: 0;
+  transition: background-color 0.2s;
+}
+
+.send-btn:hover {
+  background: #0056b3;
+}
+
+.arrow-icon {
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  line-height: 1;
 }
 </style>

@@ -69,6 +69,28 @@ export const useTasksStore = defineStore('tasks', {
           message: error.response?.data?.error || 'Failed to delete task' 
         }
       }
+    },
+
+    async processAgentPrompt(prompt) {
+      try {
+        const response = await axios.post(`${API_BASE_URL}/api/agent/process`, {
+          prompt
+        })
+        
+        // Refresh tasks as the agent might have modified them
+        await this.fetchTasks()
+        
+        return { 
+          success: true, 
+          response: response.data.response 
+        }
+      } catch (error) {
+        console.error('Error processing agent prompt:', error)
+        return { 
+          success: false, 
+          message: error.response?.data?.response || error.response?.data?.error || 'Failed to process prompt' 
+        }
+      }
     }
   }
 })

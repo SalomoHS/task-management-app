@@ -1,11 +1,19 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-from dotenv import load_dotenv
-import os
 from utils.db_connection import db
-
-# Load environment variables
+import os
+import logging
+from rich.logging import RichHandler
+from dotenv import load_dotenv
 load_dotenv()
+
+# Configure logging with Rich
+logging.basicConfig(
+    level="INFO",
+    format="%(message)s",
+    datefmt="[%X]",
+    handlers=[RichHandler(rich_tracebacks=True)]
+)
 
 def create_app():
     app = Flask(__name__)
@@ -16,12 +24,14 @@ def create_app():
     # Register blueprints
     from routes.tasks import tasks_bp
     from routes.users import users_bp
+    from routes.agent import agent_bp
     
     app.register_blueprint(tasks_bp)
     app.register_blueprint(users_bp)
+    app.register_blueprint(agent_bp)
     
     @app.route('/health')
-    def health_check():
+    async def health_check():
         # Test psycopg2 connection with tasks table
         try:
             db.execute_query('SELECT 1', fetch_one=True)
@@ -36,7 +46,7 @@ def create_app():
         })
     
     @app.route('/api/health')
-    def api_health_check():
+    async def api_health_check():
         """API health check endpoint"""
         try:
             db.execute_query('SELECT 1', fetch_one=True)
@@ -54,4 +64,4 @@ def create_app():
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host=os.getenv('FLASK_DEV_HOST'), port=int(os.getenv('FLASK_DEV_PORT')))

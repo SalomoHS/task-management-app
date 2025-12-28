@@ -1,7 +1,7 @@
 import psycopg2
 import psycopg2.extras
 from contextlib import contextmanager
-from typing import Optional, Dict, Any, List
+from typing import Optional, Any
 import logging
 import os
 from dotenv import load_dotenv

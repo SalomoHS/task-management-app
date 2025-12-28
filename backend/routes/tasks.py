@@ -9,7 +9,7 @@ tasks_bp = Blueprint('tasks', __name__, url_prefix='/api/tasks')
 
 @tasks_bp.route('', methods=['GET'])
 @jwt_required
-def get_tasks():
+async def get_tasks():
     """Get all tasks - requires authentication"""
     try:
         query = """
@@ -25,7 +25,7 @@ def get_tasks():
 
 @tasks_bp.route('/<int:task_id>', methods=['GET'])
 @jwt_required
-def get_task(task_id):
+async def get_task(task_id):
     """Get a specific task - requires authentication"""
     try:
         query = """
@@ -114,7 +114,7 @@ def update_task(task_id):
 
 @tasks_bp.route('/<int:task_id>', methods=['DELETE'])
 @jwt_required
-def delete_task(task_id):
+async def delete_task(task_id):
     """Delete a task - requires authentication"""
     try:
         query = "DELETE FROM tasks WHERE task_id = %s RETURNING *"

@@ -1,8 +1,12 @@
-Flask==2.3.3
+flask[async]
 Flask-CORS==4.0.0
 python-dotenv==1.0.0
-requests==2.31.0
+requests==2.32.5
 pytest==7.4.2
 pytest-flask==1.2.0
 PyJWT==2.10.1
 psycopg2==2.9.11
+strands[gemini]
+aiohttp==3.13.2
+waitress==3.0.2
+rich==14.2.0
