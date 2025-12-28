@@ -20,5 +20,5 @@ class LanguageModel:
 
         except Exception as e:
             console.print_exception(show_locals=True)
-            console.print(f"[red](llm_model.py) | Error in model initialization: {e}[/red]")
+            console.print(f"[red](language_model.py) | Error in model initialization: {e}[/red]")
             raise

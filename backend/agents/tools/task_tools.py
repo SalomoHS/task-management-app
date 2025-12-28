@@ -88,7 +88,7 @@ class TaskTools:
         console.print(f"[yellow]Task with title '{title}' not found[/yellow]")
         return None
 
-    def update_task(self, task_id: int, title: str,  status_id: str,
+    def update_task(self, task_id: int, current_title:str, title: str,  status_id: str,
                    description: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """Update an existing task"""
         try:
@@ -101,6 +101,8 @@ class TaskTools:
             if status_id is not None:
                 data["status_id"] = status_id
             
+            console.print(f"[yellow]Update payload: {data}[/yellow]")
+                
             if not data:
                 console.print("[yellow]No fields provided for update[/yellow]")
                 return None
@@ -110,21 +112,21 @@ class TaskTools:
                                   json=data)
             response.raise_for_status()
             task = response.json()
-            console.print(f"[green]Successfully updated task '{title}'with id {task_id}[/green]")
+            console.print(f"[green]Successfully updated task '{current_title}'[/green]")
             return task
         except requests.exceptions.RequestException as e:
-            console.print(f"[red]Error updating task {task_id}: {e}[/red]")
+            console.print(f"[red]Error updating task '{current_title}': {e}[/red]")
             return None
     
-    def delete_task(self, task_id: int) -> bool:
+    def delete_task(self, task_id: int, title:str) -> bool:
         """Delete a task"""
         try:
             response = requests.delete(f"{self.base_url}/api/tasks/{task_id}", headers=self.headers)
             response.raise_for_status()
-            console.print(f"[green]Successfully deleted task {task_id}[/green]")
+            console.print(f"[green]Successfully deleted task '{title}'[/green]")
             return True
         except requests.exceptions.RequestException as e:
-            console.print(f"[red]Error deleting task {task_id}: {e}[/red]")
+            console.print(f"[red]Error deleting task '{title}': {e}[/red]")
             return False
 
 # Tool functions that can be used by the AI agent
@@ -191,16 +193,16 @@ def create_task_tool(title: str, description: str = "no description", status_id:
     return f"Successfully created task: {task.get('title')} (ID: {task.get('task_id')})"
 
 @tool
-def update_task_tool(task_id: int = None, current_title: str = None, title: str = None, description: str = None, status_id: str = None) -> str:
+def update_task_tool(task_id: int = None, current_title: str = None, title: str = None, status: str = None, description: str = None) -> str:
     """
     Tool: update_task_tool
-    Description: Tool function to update an existing task. You must provide either task_id and current_title to identify the task.
+    Description: Tool function to update an existing task. You must provide task_id and current_title to identify the task.
     Args:
         task_id (int): task id
         current_title (str): current title
         title (str): new task title
+        status (str): new task status, convert any input to exactly TODO | INPROGRESS | DONE
         description (str): new task description
-        status_id (str): new task status, convert any input to exactly TODO | INPROGRESS | DONE
     Return:
         Returns success message or error.
     """
@@ -215,10 +217,9 @@ def update_task_tool(task_id: int = None, current_title: str = None, title: str 
             else:
                 return f"Could not find task with title '{current_title}' to update."
         else:
-            return "Error: You must provide either 'task_id' and 'current_title' to identify the task to update."
-            
-    task = task_tools.update_task(task_id, title, description, status_id)
-    
+            return "Error: You must provide 'task_id' and 'current_title' to identify the task to update."
+
+    task = task_tools.update_task(task_id=task_id, current_title=current_title, title=title, status_id=status, description=description)
     if not task:
         return f"Failed to update task {task_id}."
     
@@ -228,7 +229,7 @@ def update_task_tool(task_id: int = None, current_title: str = None, title: str 
 def delete_task_tool(task_id: int = None, title: str = None) -> str:
     """
     Tool: delete_task_tool
-    Description: Tool function to delete a task. You must provide either task_id AND title to identify the task.
+    Description: Tool function to delete a task. You must provide task_id AND title to identify the task.
     Args:
         task_id (int): task id
         title (str): task title
@@ -246,9 +247,9 @@ def delete_task_tool(task_id: int = None, title: str = None) -> str:
             else:
                 return f"Could not find task with title '{title}' to delete."
         else:
-            return "Error: You must provide either 'task_id' and 'title' to identify the task to delete."
+            return "Error: You must provide 'task_id' and 'title' to identify the task to delete."
 
-    success = task_tools.delete_task(task_id)
+    success = task_tools.delete_task(task_id, title)
     
     if success:
         return f"Successfully deleted task {task_id}."

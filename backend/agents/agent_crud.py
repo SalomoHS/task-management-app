@@ -25,7 +25,7 @@ class AgentCrud(LanguageModel):
             
         except Exception as e:
             console.print_exception(show_locals=True)
-            console.print(f"[red](ai_agent.py) | Error in model initialization: {e}[/red]")
+            console.print(f"[red](agent_crud.py) | Error in model initialization: {e}[/red]")
             raise
 
     def __initialize_agent(self):
@@ -42,7 +42,7 @@ class AgentCrud(LanguageModel):
                             )
 
         except Exception as e:
-            console.print(f"[red](ai_agent.py) | Error initialize agent:[/red]: {e}")
+            console.print(f"[red](agent_crud.py) | Error initialize agent:[/red]: {e}")
             raise
 
     async def call(self, prompt):
@@ -53,16 +53,14 @@ class AgentCrud(LanguageModel):
 
         except Exception as e:
             console.print_exception(show_locals=True)
-            console.print(f"[red](ai_agent.py) | Error processing your prompt:[/red]: {e}")
-            return f"(ai_agent.py) | Error processing your prompt: {str(e)}"
+            console.print(f"[red](agent_crud.py) | Error processing your prompt:[/red]: {e}")
+            return f"(agent_crud.py) | Error processing your prompt: {str(e)}"
             
     def close(self):
         """Cleanup resources used by the agents"""
         try:
-            if hasattr(self, '_AICrudAgent__agent'):
+            if hasattr(self, '_AgentCrud__agent'):
                 self.__agent.cleanup()
-            if hasattr(self, '_AICrudAgent__reviewer_agent'):
-                self.__reviewer_agent.cleanup()
             console.print("[green]CRUD Agent resources cleaned up successfully[/green]")
         except Exception as e:
             console.print(f"[red]Error closing agent resources: {e}[/red]")

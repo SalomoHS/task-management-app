@@ -22,18 +22,18 @@ class AgentPromptReviewer(LanguageModel):
             
         except Exception as e:
             console.print_exception(show_locals=True)
-            console.print(f"[red](ai_agent.py) | Error in model initialization: {e}[/red]")
+            console.print(f"[red](agent_prompt_reviewer.py) | Error in model initialization: {e}[/red]")
             raise
     
     def __initialize_reviewer_agent(self):
         try:
-            self.__reviewer_agent = Agent(
-                                        model=self.model,
-                                        tools=[], 
-                                        system_prompt="You are a Reviewer Agent for a Task Management System."
-                                    )
+            self.__agent = Agent(
+                        model=self.model,
+                        tools=[], 
+                        system_prompt="You are a Reviewer Agent for a Task Management System."
+                    )
         except Exception as e:
-            console.print(f"[red](ai_agent.py) | Error initialize agent:[/red]: {e}")
+            console.print(f"[red](agent_prompt_reviewer.py) | Error initialize agent:[/red]: {e}")
             raise
 
     def __review_prompt(self, prompt: str) -> bool:
@@ -49,7 +49,7 @@ class AgentPromptReviewer(LanguageModel):
         try:
             console.print(f"[yellow]Prompt REVIEW: {prompt}[/yellow]")
                 
-            response = self.__reviewer_agent(review_prompt)
+            response = self.__agent(review_prompt)
             # Handle response structure safely
             if hasattr(response, 'message') and 'content' in response.message:
                  result = response.message['content'][0]['text'].strip()
@@ -74,28 +74,17 @@ class AgentPromptReviewer(LanguageModel):
             is_relevant, review_message = self.__review_prompt(prompt)
             
             return is_relevant, review_message
-            if not is_relevant:
-                console.print(f"\n[red]Prompt rejected by Reviewer Agent: {review_message}[/red]")
-                return review_message
-            
-            console.print(f"\n[green]Prompt accepted by Reviewer Agent: {review_message}[/green]")
-                
-            # Step 2: Proceed with the main agent
-            agent = self.__agent(prompt)
-            return agent
 
         except Exception as e:
             console.print_exception(show_locals=True)
-            console.print(f"[red](ai_agent.py) | Error processing your prompt:[/red]: {e}")
-            return f"(ai_agent.py) | Error processing your prompt: {str(e)}"
+            console.print(f"[red](agent_prompt_reviewer.py) | Error processing your prompt:[/red]: {e}")
+            return f"(agent_prompt_reviewer.py) | Error processing your prompt: {str(e)}"
             
     def close(self):
         """Cleanup resources used by the agents"""
         try:
-            if hasattr(self, '_AICrudAgent__agent'):
+            if hasattr(self, '_AgentPromptReviewer__agent'):
                 self.__agent.cleanup()
-            if hasattr(self, '_AICrudAgent__reviewer_agent'):
-                self.__reviewer_agent.cleanup()
             console.print("\n[green]Prompt Reviewer Agent resources cleaned up successfully[/green]")
         except Exception as e:
             console.print(f"[red]Error closing agent resources: {e}[/red]")

@@ -12,7 +12,7 @@ class AgentGateway():
 
         except Exception as e:
             console.print_exception(show_locals=True)
-            console.print(f"[red](ai_agent.py) | Error in model initialization: {e}[/red]")
+            console.print(f"[red](geteway.py) | Error in model initialization: {e}[/red]")
             raise
 
     async def call_agents(self, prompt):
@@ -39,7 +39,7 @@ class AgentGateway():
             console.print(f"[red](ai_agent.py) | Error processing your prompt:[/red]: {e}")
             return {
                 "status": "error",
-                "message": f"(ai_agent.py) | Error processing your prompt: {str(e)}"
+                "message": f"(geteway.py) | Error processing your prompt: {str(e)}"
             }
 
         finally:
