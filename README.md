@@ -168,6 +168,11 @@ Build the frontend for production:
 npm run build
 ```
 
+Preview the production build:
+```bash
+npm run preview
+```
+
 Run backend in production mode (Waitress):
 ```bash
 npm run prod:backend
