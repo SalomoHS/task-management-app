@@ -13,10 +13,10 @@ def main():
     try:
         agent = AgentGateway()
         prompts = [
-            # "Tell me a joke",
-            "Create a new task called 'Review python code' with description 'Review the pull request'",
-            "Update task 'Review python code' status to complete",
-            "Delete task 'Review python code'"
+            "Tell me a joke",
+            # "Create a new task called 'Review python code' with description 'Review the pull request'",
+            # "Update task 'Review python code' status to complete",
+            # "Delete task 'Review python code'"
         ]
         
         console.print("[bold blue]AI Task Manager Example[/bold blue]")

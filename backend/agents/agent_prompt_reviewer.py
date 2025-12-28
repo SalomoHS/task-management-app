@@ -68,7 +68,7 @@ class AgentPromptReviewer(LanguageModel):
             console.print(f"[red]Error in prompt review: {e}[/red]")
             return False, "I encountered an error while reviewing your request. Please try again."
 
-    def call(self, prompt):
+    async def call(self, prompt):
         try:
             # Step 1: Review the prompt
             is_relevant, review_message = self.__review_prompt(prompt)

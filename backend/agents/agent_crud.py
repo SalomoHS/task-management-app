@@ -45,7 +45,7 @@ class AgentCrud(LanguageModel):
             console.print(f"[red](ai_agent.py) | Error initialize agent:[/red]: {e}")
             raise
 
-    def call(self, prompt):
+    async def call(self, prompt):
         try:
             
             agent = self.__agent(prompt)
