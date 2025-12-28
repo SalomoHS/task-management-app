@@ -31,7 +31,8 @@ async def get_auth_token(session):
     return None
 
 async def test_users(session):
-    print("=== Testing User Endpoints (Hardcoded Admin with JWT) ===")
+    console.print("\n")
+    console.rule("[bold blue]Testing User Endpoints (Hardcoded Admin with JWT)[/bold blue]")
     
     # Test login with correct credentials
     login_data = {
@@ -71,18 +72,18 @@ async def test_users(session):
         "password": "wrongpass"
     }
     async with session.post(f"{BASE_URL}/api/users/login", json=wrong_login_data) as response:
-        console.print(f"Login (Wrong): [{ 'green' if response.status == 200 else 'yellow' }]{response.status}[/] - {await response.json()}")
+        console.print(f"Login (Wrong): [{ 'green' if response.status == 200 else 'red' }]{response.status}[/] - {await response.json()}")
     
     # Try to access protected route without token
     async with session.get(f"{BASE_URL}/api/users") as response:
-        console.print(f"Get Users (No Auth): [{ 'green' if response.status == 200 else 'yellow' }]{response.status}[/] - {await response.json()}")
+        console.print(f"Get Users (No Auth): [{ 'green' if response.status == 200 else 'red' }]{response.status}[/] - {await response.json()}")
     
     # Try to get non-existent user
     token = await get_auth_token(session)
     if token:
         headers = {"Authorization": f"Bearer {token}"}
         async with session.get(f"{BASE_URL}/api/users/999", headers=headers) as response:
-            console.print(f"Get Non-existent User: [{ 'green' if response.status == 200 else 'yellow' }]{response.status}[/] - {await response.json()}")
+            console.print(f"Get Non-existent User: [{ 'green' if response.status == 200 else 'red' }]{response.status}[/] - {await response.json()}")
 
 async def test_tasks(session):
     console.print("\n")
@@ -96,17 +97,19 @@ async def test_tasks(session):
     
     headers = {"Authorization": f"Bearer {token}"}
     
-    # Try to access tasks without authentication first
-    # Note: tasks routes are prefixed with /api/tasks
-    async with session.get(f"{BASE_URL}/api/tasks") as response:
-        console.print(f"Get Tasks (No Auth): [{ 'green' if response.status == 200 else 'yellow' }]{response.status}[/] - {await response.json()}")
     
-    # Create task with authentication
+    # Try to access tasks with authentication first
+    # Note: tasks routes are prefixed with /api/tasks
+    
     task_data = {
         "title": "Test Task with JWT",
         "description": "This is a test task with JWT authentication",
         "status_id": "TODO"
     }
+
+    async with session.get(f"{BASE_URL}/api/tasks",headers=headers) as response:
+        console.print(f"Get Tasks (Authenticated): [{ 'green' if response.status == 200 else 'red' }]{response.status}[/] - {await response.json()}")
+    
     async with session.post(f"{BASE_URL}/api/tasks", json=task_data, headers=headers) as response:
         data = await response.json()
         console.print(f"Create Task (Authenticated): [{ 'green' if response.status == 201 else 'red' }]{response.status}[/] - {data}")
@@ -131,7 +134,40 @@ async def test_tasks(session):
             # Delete task
             async with session.delete(f"{BASE_URL}/api/tasks/{task_id}", headers=headers) as resp:
                 console.print(f"Delete Task (Authenticated): [{ 'green' if resp.status == 200 else 'red' }]{resp.status}[/] - {await resp.json()}")
-
+    
+    console.print("\n")
+    console.rule("[bold blue]Testing Task CRUD without JWT Authentication[/bold blue]")
+    
+    # Try to access tasks without authentication first
+    # Note: tasks routes are prefixed with /api/tasks
+    async with session.get(f"{BASE_URL}/api/tasks") as response:
+        console.print(f"Get Tasks (No Auth): [{ 'green' if response.status == 200 else 'red' }]{response.status}[/] - {await response.json()}")
+    
+    async with session.post(f"{BASE_URL}/api/tasks", json=task_data) as response:
+        data = await response.json()
+        console.print(f"Create Task (No Auth): [{ 'green' if response.status == 201 else 'red' }]{response.status}[/] - {data}")
+    
+        if response.status == 201:
+            task_id = data['task_id']
+            
+            # Get task
+            async with session.get(f"{BASE_URL}/api/tasks/{task_id}", headers=headers) as resp:
+                console.print(f"Get Task (Authenticated): [{ 'green' if resp.status == 200 else 'red' }]{resp.status}[/] - {await resp.json()}")
+            
+            # Update task
+            update_data = {"status_id": "INPROGRESS", "description": "Updated description with JWT"}
+            async with session.put(f"{BASE_URL}/api/tasks/{task_id}", json=update_data, headers=headers) as resp:
+                console.print(f"Update Task (Authenticated): [{ 'green' if resp.status == 200 else 'red' }]{resp.status}[/] - {await resp.json()}")
+            
+            # Get all tasks
+            async with session.get(f"{BASE_URL}/api/tasks", headers=headers) as resp:
+                tasks = await resp.json()
+                console.print(f"Get All Tasks (Authenticated): [{ 'green' if resp.status == 200 else 'red' }]{resp.status}[/] - {len(tasks)} tasks")
+            
+            # Delete task
+            async with session.delete(f"{BASE_URL}/api/tasks/{task_id}", headers=headers) as resp:
+                console.print(f"Delete Task (Authenticated): [{ 'green' if resp.status == 200 else 'red' }]{resp.status}[/] - {await resp.json()}")
+    
 async def test_ai_agent(session):
     console.print("\n")
     console.rule("[bold blue]Testing AI Agent (Prompt-based)[/bold blue]")

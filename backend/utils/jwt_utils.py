@@ -12,8 +12,8 @@ load_dotenv()
 
 # JWT Secret key - in production, this should be in environment variables
 JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
-JWT_ALGORITHM = 'HS256'
-JWT_EXPIRATION_HOURS = 24
+JWT_ALGORITHM = os.getenv('JWT_ALGORITHM')
+JWT_EXPIRATION_HOURS = int(os.getenv('JWT_EXPIRATION_HOURS'))
 
 def generate_jwt_token(user_data):
     """
