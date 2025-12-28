@@ -2,6 +2,31 @@
 
 This directory contains the Flask-based backend for the Task Management application. It provides APIs for user authentication, task management, and AI agent interactions.
 
+# Backend Structure
+
+```
+backend/
+├── agents/                 # AI Agent logic and tools
+│   ├── system_prompts/     # System prompts for AI agents
+│   ├── tools/              # Tools available to agents
+│   ├── agent_crud.py       # CRUD agent implementation
+│   ├── agent_prompt_reviewer.py # Prompt reviewer agent
+│   ├── gateway.py          # Gateway for agent interactions
+│   └── language_model.py   # LLM configuration
+├── routes/                 # API Routes (Blueprints)
+│   ├── agent.py            # AI feature endpoints
+│   ├── tasks.py            # Task management endpoints
+│   └── users.py            # User authentication endpoints
+├── utils/                  # Utility functions
+│   ├── context.py          # Context management
+│   ├── db_connection.py    # Database connection logic
+│   └── jwt_utils.py        # JWT authentication utilities
+├── dev.py                  # Development entry point
+├── prod.py                 # Production entry point
+├── requirements.txt        # Python dependencies
+└── test_endpoints.py       # API testing script
+```
+
 ## Setup
 
 1. **Install Dependencies**
@@ -128,4 +153,3 @@ python test_endpoints.py
    - Retrieves, updates, and deletes the created task.
 5. **AI Agent**:
    - Test prompt processing endpoints.
-

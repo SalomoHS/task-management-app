@@ -214,7 +214,7 @@ async def main():
             await test_tasks(session)
             
             # Test AI Agent
-            # await test_ai_agent(session)
+            await test_ai_agent(session)
             
     except Exception as e:
         console.print(f"[bold red]Error: {e}[/bold red]")
