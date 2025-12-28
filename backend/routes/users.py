@@ -2,7 +2,6 @@
 User routes with hardcoded dummy admin account and JWT authentication
 """
 from flask import Blueprint, request, jsonify
-from datetime import datetime
 from utils.jwt_utils import generate_jwt_token, jwt_required, admin_required
 
 users_bp = Blueprint('users', __name__, url_prefix='/api/users')

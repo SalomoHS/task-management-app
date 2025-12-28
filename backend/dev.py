@@ -2,8 +2,18 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from utils.db_connection import db
 import os
+import logging
+from rich.logging import RichHandler
 from dotenv import load_dotenv
 load_dotenv()
+
+# Configure logging with Rich
+logging.basicConfig(
+    level="INFO",
+    format="%(message)s",
+    datefmt="[%X]",
+    handlers=[RichHandler(rich_tracebacks=True)]
+)
 
 def create_app():
     app = Flask(__name__)
