@@ -116,6 +116,7 @@ export default {
   margin-bottom: 1.5rem;
   max-height: 60vh;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .modal-body p {
@@ -123,6 +124,7 @@ export default {
   color: #333;
   line-height: 1.5;
   white-space: pre-wrap; /* Preserve line breaks in response */
+  word-break: break-word;
 }
 
 .modal-actions {

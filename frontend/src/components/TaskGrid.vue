@@ -154,7 +154,7 @@
         <input 
           type="text" 
           v-model="promptInput" 
-          placeholder="Ask AI to help..." 
+          placeholder="Ask AI to help create, update, or delete your task..." 
           :disabled="isPromptLoading"
           @keyup.enter="handlePromptSubmit"
         />
@@ -433,7 +433,17 @@ export default {
         if (result.success) {
           promptInput.value = ''
           responseTitle.value = 'Success'
-          responseMessage.value = result.response || 'Action completed successfully'
+          
+          // Clean up the response message if it contains raw AgentResult
+          let cleanMessage = result.response || 'Action completed successfully'
+          if (typeof cleanMessage === 'string' && cleanMessage.includes('AgentResult')) {
+            const match = cleanMessage.match(/content': \[\{'text': (["'])([\s\S]*?)\1\}\]/)
+            if (match && match[2]) {
+              cleanMessage = match[2]
+            }
+          }
+          
+          responseMessage.value = cleanMessage
           responseType.value = 'success'
         } else {
           console.error('Agent processing failed:', result.message)
