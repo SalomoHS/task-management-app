@@ -529,6 +529,8 @@ export default {
 .task-grid-header h2 {
   color: #333;
   margin: 0;
+  font-weight: bold;
+  font-size: 1.5rem;
 }
 
 .create-btn {

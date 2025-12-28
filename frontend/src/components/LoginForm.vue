@@ -2,6 +2,13 @@
   <div class="login-container">
     <div class="login-form">
       <h2>Login</h2>
+      <div class="login-info">
+        <p>Dummy Login:</p>
+        <ul>
+          <li>Username: <strong>admin</strong></li>
+          <li>Password: <strong>admin</strong></li>
+        </ul>
+      </div>
       <form @submit.prevent="handleLogin">
         <div class="form-group">
           <label for="username">Username:</label>
@@ -104,6 +111,8 @@ export default {
   text-align: center;
   margin-bottom: 1.5rem;
   color: #333;
+  font-weight: bold;
+  font-size: 1.5rem;
 }
 
 .form-group {
@@ -161,5 +170,30 @@ export default {
   border: 1px solid #f5c6cb;
   border-radius: 4px;
   text-align: center;
+}
+
+.login-info {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #6c757d;
+  text-align: center;
+}
+
+.login-info p {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.login-info ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.login-info li {
+  margin-bottom: 0.25rem;
 }
 </style>

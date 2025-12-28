@@ -3,7 +3,7 @@
     <div class="nav-container">
       <div class="nav-brand">
         <router-link to="/dashboard" class="brand-link">
-          Task Manager
+          Tasker
         </router-link>
       </div>
       
