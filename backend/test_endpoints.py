@@ -130,14 +130,29 @@ async def test_tasks(session):
 async def test_ai_agent(session):
     print("\n=== Testing AI Agent (Prompt-based) ===")
     
+    # Get authentication token
+    token = await get_auth_token(session)
+    if not token:
+        print("Failed to get authentication token")
+        return
+    
+    headers = {"Authorization": f"Bearer {token}"}
+    
     # Test prompt processing
     # prompt = "Create a new task called 'Test Task from Agent' with description 'Created via API agent'"
     prompt = "Tell me a joke"
     print(f"Sending prompt: {prompt}")
     
     try:
+        # First try without token (should fail)
+        print("Testing without token (expecting 401)...")
         async with session.post(f"{BASE_URL}/api/agent/process", json={"prompt": prompt}) as response:
-            print(f"Agent Response: {response.status} - {await response.json()}")
+            print(f"Agent Response (No Auth): {response.status} - {await response.json()}")
+
+        # Then try with token
+        print("Testing with token...")
+        async with session.post(f"{BASE_URL}/api/agent/process", json={"prompt": prompt}, headers=headers) as response:
+            print(f"Agent Response (Authenticated): {response.status} - {await response.json()}")
     except Exception as e:
         print(f"Error testing agent: {e}")
 

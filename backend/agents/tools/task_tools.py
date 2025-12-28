@@ -8,6 +8,7 @@ from strands import tool
 from dotenv import load_dotenv
 from typing import Dict, Any, List, Optional
 from rich.console import Console
+from utils.context import request_token
 
 load_dotenv()
 console = Console()
@@ -15,7 +16,7 @@ console = Console()
 class TaskTools:
     def __init__(self):
         self.base_url = os.getenv('BASE_URL')
-        token = self.get_auth_token()
+        token = request_token.get() or self.get_auth_token()
         self.headers = {"Authorization": f"Bearer {token}"}
         console.print(f"[green]Successfully create token {self.headers}[/green]")
     

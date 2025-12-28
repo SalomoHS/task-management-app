@@ -1,5 +1,6 @@
 from .agent_crud import AgentCrud
 from .agent_prompt_reviewer import AgentPromptReviewer
+from utils.context import request_token
 from rich.console import Console
 
 console = Console()
@@ -15,8 +16,13 @@ class AgentGateway():
             console.print(f"[red](geteway.py) | Error in model initialization: {e}[/red]")
             raise
 
-    async def call_agents(self, prompt):
+    async def call_agents(self, prompt, token=None):
         try:
+            token_ctx = None
+            
+            if token:
+                token_ctx = request_token.set(token)
+            
             is_relevant, review_message = await self.__reviewer_agent.call(prompt)
             
             if not is_relevant:
@@ -28,7 +34,7 @@ class AgentGateway():
             
             console.print(f"\n[green]Prompt accepted by Reviewer Agent[/green]")
                 
-            agent = await self.__crud_agent.call(prompt)
+            agent = await self.__crud_agent.call(prompt, token)
             return {
                 "status": "success",
                 "message": agent
@@ -43,5 +49,8 @@ class AgentGateway():
             }
 
         finally:
+            if token_ctx:
+                request_token.reset(token_ctx)
+
             self.__reviewer_agent.close()
             self.__crud_agent.close()
