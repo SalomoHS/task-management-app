@@ -33,7 +33,6 @@ task-management-app/
 
 - Node.js (v16 or higher)
 - Python (v3.8 or higher)
-- Supabase account (or any PostgreSQL database)
 - Google Gemini API Key (for AI features)
 
 ### Installation
@@ -196,3 +195,7 @@ npm run prod:backend
 
 **Database:**
 - PostgreSQL
+
+**AI Integration:**
+- Google Gemini API
+- Strands Library
