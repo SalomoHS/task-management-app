@@ -32,7 +32,7 @@ task-management-app/
 ### Prerequisites
 
 - Node.js (v16 or higher)
-- Python (v3.8 or higher)
+- Python (v3.10 or higher)
 - Google Gemini API Key (for AI features)
 
 ### Installation
@@ -102,7 +102,7 @@ task-management-app/
 
 5. Database Setup:
 
-   Execute the following SQL commands to set up the schema, tables, and initial data:
+   Execute the following SQL commands to your PostgreSQL database to set up the schema, tables, and initial data:
 
    ```sql
    -- create schema
