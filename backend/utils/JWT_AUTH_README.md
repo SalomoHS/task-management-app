@@ -73,6 +73,7 @@ All the following endpoints require authentication via JWT token in the Authoriz
 - `POST /api/tasks` - Create new task
 - `PUT /api/tasks/{id}` - Update task
 - `DELETE /api/tasks/{id}` - Delete task
+- `POST /api/agent/process` - Process AI agent prompt
 
 ### Using JWT Tokens
 
@@ -93,7 +94,7 @@ JWT_SECRET_KEY=your-super-secret-jwt-key-change-in-production-2024
 
 1. Install the required dependency:
 ```bash
-pip install PyJWT==2.8.0
+pip install PyJWT==2.10.1
 ```
 
 2. Or install all requirements:
