@@ -128,15 +128,10 @@ task-management-app/
 
 Run both frontend and backend in development mode:
 ```bash
-npm run dev
-```
-
-Or run them separately:
-```bash
-# Frontend only (runs on http://localhost:3000 by default)
+# Frontend (runs on http://localhost:3000 by default)
 npm run dev:frontend
 
-# Backend only (runs on http://localhost:5000)
+# Backend (runs on http://localhost:5000)
 npm run dev:backend
 ```
 
