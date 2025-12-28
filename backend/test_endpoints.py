@@ -168,11 +168,11 @@ async def main():
                  return
 
             # Test CRUD operations with JWT
-            # await test_users(session)
-            # await test_tasks(session)
+            await test_users(session)
+            await test_tasks(session)
             
             # Test AI Agent
-            await test_ai_agent(session)
+            # await test_ai_agent(session)
             
     except Exception as e:
         print(f"Error: {e}")

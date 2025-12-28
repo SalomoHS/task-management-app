@@ -140,6 +140,13 @@
       @confirm="confirmDeleteTask"
       @cancel="hideDeleteConfirmation"
     />
+    
+    <ResponseModal
+      ref="responseModal"
+      :title="responseTitle"
+      :message="responseMessage"
+      :type="responseType"
+    />
 
     <!-- Floating Input Prompt Bar -->
     <div class="input-prompt-container">
@@ -165,11 +172,13 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useTasksStore } from '../stores/tasks'
 import { useAuthStore } from '../stores/auth'
 import ConfirmationDialog from './ConfirmationDialog.vue'
+import ResponseModal from './ResponseModal.vue'
 
 export default {
   name: 'TaskGrid',
   components: {
-    ConfirmationDialog
+    ConfirmationDialog,
+    ResponseModal
   },
   setup() {
     const tasksStore = useTasksStore()
@@ -197,6 +206,12 @@ export default {
     const saveDialog = ref(null)
     const deleteDialog = ref(null)
     const taskToDelete = ref(null)
+    
+    // Response modal state
+    const responseModal = ref(null)
+    const responseTitle = ref('')
+    const responseMessage = ref('')
+    const responseType = ref('success')
     
     // Status mapping for API calls (status_id values)
     const statusMapping = {
@@ -407,17 +422,35 @@ export default {
       }
     }
 
-    const handlePromptSubmit = () => {
+    const handlePromptSubmit = async () => {
       if (!promptInput.value.trim() || isPromptLoading.value) return
       
-      console.log('Prompt submitted:', promptInput.value)
+      const prompt = promptInput.value
       isPromptLoading.value = true
       
-      // Simulate loading
-      setTimeout(() => {
+      try {
+        const result = await tasksStore.processAgentPrompt(prompt)
+        if (result.success) {
+          promptInput.value = ''
+          responseTitle.value = 'Success'
+          responseMessage.value = result.response || 'Action completed successfully'
+          responseType.value = 'success'
+        } else {
+          console.error('Agent processing failed:', result.message)
+          responseTitle.value = 'Error'
+          responseMessage.value = result.message || 'An error occurred'
+          responseType.value = 'error'
+        }
+        responseModal.value?.open()
+      } catch (error) {
+        console.error('Unexpected error:', error)
+        responseTitle.value = 'Error'
+        responseMessage.value = 'An unexpected error occurred'
+        responseType.value = 'error'
+        responseModal.value?.open()
+      } finally {
         isPromptLoading.value = false
-        promptInput.value = ''
-      }, 5000)
+      }
     }
     
     onMounted(async () => {
@@ -446,6 +479,10 @@ export default {
       taskForm,
       saveDialog,
       deleteDialog,
+      responseModal,
+      responseTitle,
+      responseMessage,
+      responseType,
       formatDate,
       getStatusDisplay,
       getStatusClass,
