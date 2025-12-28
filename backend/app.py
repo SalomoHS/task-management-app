@@ -16,9 +16,11 @@ def create_app():
     # Register blueprints
     from routes.tasks import tasks_bp
     from routes.users import users_bp
+    from routes.ai_agent import ai_agent_bp
     
     app.register_blueprint(tasks_bp)
     app.register_blueprint(users_bp)
+    app.register_blueprint(ai_agent_bp)
     
     @app.route('/health')
     def health_check():
