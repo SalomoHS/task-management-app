@@ -3,7 +3,7 @@
 A full-stack task management application built with Vue.js frontend, Flask backend (PostgreSQL) database, and AI capabilities powered by Gemini and Strands.
 
 ## Program Architecture
-<img width="2910" height="1441" alt="image" src="https://github.com/user-attachments/assets/cbedb600-ebdd-40ce-8dee-218b9f0c59b1" />
+<img width="1482" height="643" alt="image" src="https://github.com/user-attachments/assets/eed52a58-9e8c-4009-822f-9a13998ba44f" />
 
 ## Project Structure
 
