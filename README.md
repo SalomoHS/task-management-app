@@ -134,6 +134,25 @@ task-management-app/
    ('TODO', '2025-12-26 19:35:39.104347+00', 'To Do');
    ```
 
+   ### Database Schema Diagram
+
+   ```mermaid
+   erDiagram
+       tasks {
+           int8 task_id PK
+           timestamptz created_at
+           text title
+           text description
+           text status_id FK
+       }
+       status {
+           text status_id PK
+           timestamptz created_at
+           text status
+       }
+       tasks }|--|| status : "status_id"
+   ```
+
 ### Development
 
 Run both backend and frontend in development mode:
