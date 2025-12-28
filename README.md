@@ -76,7 +76,7 @@ task-management-app/
 
 4. Set up environment variables:
 
-   > **Note:** You can simply copy the `.env.example` file to `.env` in both the `frontend` and `backend` directories. open your `.env` and then update the values.
+   > **Note:** You can simply copy the `.env.example` file to `.env` in both the `frontend` and `backend` directories. open your `.env` and then update the values. For detail `.env` you can read on `/backend/README.md` and `/frontend/README.md` 
 
    **Frontend** (`frontend/.env`):
    ```
@@ -96,7 +96,10 @@ task-management-app/
    FLASK_DEV_PORT=5000
    BASE_URL=http://localhost:5000
    
+   JWT_SECRET_KEY=dev_secret_key_change_in_prod
+   JWT_ALGORITHM=HS256
    JWT_SECRET_KEY=your-super-secret-jwt-key
+   
    GEMINI_API_KEY=your-gemini-api-key
    ```
 
