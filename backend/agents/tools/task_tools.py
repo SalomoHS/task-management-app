@@ -3,7 +3,6 @@ Task management tools for AI agent
 These tools provide CRUD operations for tasks via HTTP requests to the Flask API
 """
 import requests
-import json
 import os
 from strands import tool
 from dotenv import load_dotenv
@@ -155,7 +154,14 @@ def get_task_by_id_tool(task_id: int) -> str:
 
 @tool
 def find_task_tool(title: str) -> str:
-    """Tool function to find a task by its title. Returns formatted task information."""
+    """
+    Tool: find_task_tool
+    Description: Tool function to find a task by its title.
+    Args:
+        title (str): task title
+    Return
+        Returns formatted task information.
+    """
     task_tools = TaskTools()
     task = task_tools.find_task_by_title(title)
     
@@ -166,7 +172,16 @@ def find_task_tool(title: str) -> str:
 
 @tool
 def create_task_tool(title: str, description: str = "no description", status_id: str = "TODO") -> str:
-    """Tool function to create a new task. Returns success message or error."""
+    """
+    Tool: create_task_tool
+    Description: Tool function to create a new task.
+    Args:
+        title (str): task title
+        description (str): task description
+        status_id (str): TODO | INPROGRESS | DONE
+    Return:
+        Returns success message or error.
+    """
     task_tools = TaskTools()
     task = task_tools.create_task(title, description, status_id)
     
@@ -178,8 +193,16 @@ def create_task_tool(title: str, description: str = "no description", status_id:
 @tool
 def update_task_tool(task_id: int = None, current_title: str = None, title: str = None, description: str = None, status_id: str = None) -> str:
     """
-    Tool function to update an existing task.
-    You must provide either task_id OR current_title to identify the task.
+    Tool: update_task_tool
+    Description: Tool function to update an existing task. You must provide either task_id and current_title to identify the task.
+    Args:
+        task_id (int): task id
+        current_title (str): current title
+        title (str): new task title
+        description (str): new task description
+        status_id (str): new task status, convert any input to exactly TODO | INPROGRESS | DONE
+    Return:
+        Returns success message or error.
     """
     task_tools = TaskTools()
     
@@ -192,7 +215,7 @@ def update_task_tool(task_id: int = None, current_title: str = None, title: str 
             else:
                 return f"Could not find task with title '{current_title}' to update."
         else:
-            return "Error: You must provide either 'task_id' or 'current_title' to identify the task to update."
+            return "Error: You must provide either 'task_id' and 'current_title' to identify the task to update."
             
     task = task_tools.update_task(task_id, title, description, status_id)
     
@@ -204,8 +227,13 @@ def update_task_tool(task_id: int = None, current_title: str = None, title: str 
 @tool
 def delete_task_tool(task_id: int = None, title: str = None) -> str:
     """
-    Tool function to delete a task.
-    You must provide either task_id AND title to identify the task.
+    Tool: delete_task_tool
+    Description: Tool function to delete a task. You must provide either task_id AND title to identify the task.
+    Args:
+        task_id (int): task id
+        title (str): task title
+    Return:
+        Returns success message or error.
     """
     task_tools = TaskTools()
     

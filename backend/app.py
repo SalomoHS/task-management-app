@@ -1,11 +1,6 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-from dotenv import load_dotenv
-import os
 from utils.db_connection import db
-
-# Load environment variables
-load_dotenv()
 
 def create_app():
     app = Flask(__name__)
@@ -16,11 +11,9 @@ def create_app():
     # Register blueprints
     from routes.tasks import tasks_bp
     from routes.users import users_bp
-    from routes.ai_agent import ai_agent_bp
     
     app.register_blueprint(tasks_bp)
     app.register_blueprint(users_bp)
-    app.register_blueprint(ai_agent_bp)
     
     @app.route('/health')
     def health_check():
