@@ -18,5 +18,8 @@ describe('LoginForm.vue', () => {
     expect(wrapper.find('input#username').exists()).toBe(true)
     expect(wrapper.find('input#password').exists()).toBe(true)
     expect(wrapper.find('button[type="submit"]').text()).toBe('Login')
+    expect(wrapper.find('.login-info').exists()).toBe(true)
+    expect(wrapper.find('.login-info').text()).toContain('Dummy Login')
+    expect(wrapper.find('.login-info').text()).toContain('admin')
   })
 })
